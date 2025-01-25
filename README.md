@@ -12,6 +12,7 @@ This project showcases a **Digital Library Assistant** that leverages **Couchbas
 - Python 3.8 or higher
 - Couchbase
 - Virtual environment (optional but recommended)
+- Ollama/OpenAI
 
 ## Setup Instructions
 
@@ -58,12 +59,10 @@ The ETL (Extract, Transform, Load) process is managed by `books_etl.py`, which p
 ```bash
 python books_etl.py
 ```
+This process uses the Unstructured.io Destination connector (https://docs.unstructured.io/api-reference/ingest/destination-connector/couchbase) to import the local data files to Couchbase. 
+This process will process the local files, and upload them to Couchbase with the generated embeddings. In this demo I am using Ollama Llama 3.1 model for RAG
 
-### 2. Source Connector
-
-Use the `source-connector.py` script to connect to Couchbase and manage data.
-
-### 3. Streamlit Application
+### 2. Streamlit Application
 
 Launch the main application, a Streamlit app that provides a user interface for interacting with the digital library assistant:
 
