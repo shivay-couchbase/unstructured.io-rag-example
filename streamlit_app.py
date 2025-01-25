@@ -5,12 +5,12 @@ from dotenv import load_dotenv
 from langchain_couchbase.vectorstores import CouchbaseVectorStore
 from langchain_couchbase.cache import CouchbaseCache
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
-from langchain.memory import ChatMessageHistory
+from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.messages.base import BaseMessage
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from couchbase.cluster import Cluster
@@ -30,7 +30,6 @@ def get_retriever():
     connect_string = os.getenv("CB_CONN_STR")
     _cluster = Cluster(connect_string, options)
 
-    # Wait until the cluster is ready for use.
     _cluster.wait_until_ready(timedelta(seconds=5))
     vector_store = CouchbaseVectorStore(
         cluster=_cluster,
@@ -41,8 +40,6 @@ def get_retriever():
         index_name=os.getenv("INDEX_NAME"),
     )
     return vector_store.as_retriever()
-
-
 
 def get_question(input):
     if not input:
@@ -56,18 +53,18 @@ def get_question(input):
     else:
         raise Exception("string or dict with 'question' key expected as RAG chain input.")
 
-
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
-
 
 def get_chain():
     retriever = get_retriever()
 
     local_model = "llama3.1"
-    model = ChatOllama(model=local_model,
-                       num_predict=500,
-                       stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"])
+    model = ChatOllama(
+        model=local_model,
+        num_predict=500,
+        stop=["<|start_header_id|>", "<|end_header_id|>", "<|eot_id|>", "<|reserved_special_token"]
+    )
 
     system_prompt = """
     <|start_header_id|>user<|end_header_id|>
@@ -85,12 +82,12 @@ def get_chain():
     )
 
     rag_chain = (
-            {
-                "context": RunnableLambda(get_question) | retriever | format_docs,
-                "question": RunnablePassthrough()
-            }
-            | rag_prompt
-            | model
+        {
+            "context": RunnableLambda(get_question) | retriever | format_docs,
+            "question": RunnablePassthrough()
+        }
+        | rag_prompt
+        | model
     )
 
     contextualize_q_system_prompt = """Given a chat history and the latest user question \
@@ -121,7 +118,6 @@ def get_chain():
 
     return with_message_history
 
-
 def ask_question(chain, query):
     response = chain.invoke(
         {"question": query},
@@ -129,23 +125,19 @@ def ask_question(chain, query):
     )
     return response
 
-
 def show_ui(qa, prompt_to_user="How may I help you?"):
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [{"role": "assistant", "content": prompt_to_user}]
 
-    # Display chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
-    # User-provided prompt
     if prompt := st.chat_input():
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.write(prompt)
 
-    # Generate a new response if last message is not from assistant
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             with st.spinner("Flipping pages..."):
@@ -154,10 +146,8 @@ def show_ui(qa, prompt_to_user="How may I help you?"):
         message = {"role": "assistant", "content": response.content}
         st.session_state.messages.append(message)
 
-
 if __name__ == "__main__":
     load_dotenv()
-
     chain = get_chain()
     st.subheader("Ask me questions about your digital library")
     show_ui(chain, "What would you like to know?")
