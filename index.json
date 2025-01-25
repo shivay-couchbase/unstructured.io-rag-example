@@ -1,5 +1,5 @@
 {
-    "name": "pdf_search_test",
+    "name": "pdf_search",
     "type": "fulltext-index",
     "sourceType": "gocbcore",
     "sourceName": "haystack_bucket",
