@@ -1,104 +1,79 @@
 {
-    "name": "pdf_search",
     "type": "fulltext-index",
+    "name": "haystack_bucket.haystack_scope.pdf_search",
+    "uuid": "39b32b6e23d21abb",
     "sourceType": "gocbcore",
     "sourceName": "haystack_bucket",
+    "sourceUUID": "8810c1c526d92c219afbfe7dc55bd971",
     "planParams": {
-        "indexPartitions": 1,
-        "numReplicas": 0
+      "maxPartitionsPerPIndex": 1024,
+      "indexPartitions": 1
     },
     "params": {
-        "doc_config": {
-            "docid_prefix_delim": "",
-            "docid_regexp": "",
-            "mode": "scope.collection.type_field",
-            "type_field": "type"
+      "doc_config": {
+        "docid_prefix_delim": "",
+        "docid_regexp": "",
+        "mode": "scope.collection.type_field",
+        "type_field": "type"
+      },
+      "mapping": {
+        "analysis": {},
+        "default_analyzer": "standard",
+        "default_datetime_parser": "dateTimeOptional",
+        "default_field": "_all",
+        "default_mapping": {
+          "dynamic": true,
+          "enabled": false
         },
-        "mapping": {
-            "default_analyzer": "standard",
-            "default_datetime_parser": "dateTimeOptional",
-            "index_dynamic": true,
-            "store_dynamic": true,
-            "default_mapping": {
+        "default_type": "_default",
+        "docvalues_dynamic": true,
+        "index_dynamic": true,
+        "store_dynamic": true,
+        "type_field": "_type",
+        "types": {
+          "haystack_scope.haystack_collection": {
+            "dynamic": false,
+            "enabled": true,
+            "properties": {
+              "embedding": {
+                "dynamic": false,
+                "enabled": true,
+                "fields": [
+                  {
+                    "dims": 384,
+                    "index": true,
+                    "name": "embedding",
+                    "similarity": "dot_product",
+                    "type": "vector",
+                    "vector_index_optimized_for": "recall"
+                  }
+                ]
+              },
+              "metadata": {
                 "dynamic": true,
-                "enabled": false
-            },
-            "types": {
-                "haystack_scope.haystack_collection": {
-                    "dynamic": false,
-                    "enabled": true,
-                    "properties": {
-                        "content": {
-                            "enabled": true,
-                            "fields": [
-                                {
-                                    "docvalues": true,
-                                    "include_in_all": false,
-                                    "include_term_vectors": false,
-                                    "index": true,
-                                    "name": "content",
-                                    "store": true,
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "embedding": {
-                            "enabled": true,
-                            "dynamic": false,
-                            "fields": [
-                                {
-                                    "vector_index_optimized_for": "recall",
-                                    "docvalues": true,
-                                    "dims": 384,
-                                    "include_in_all": false,
-                                    "include_term_vectors": false,
-                                    "index": true,
-                                    "name": "embedding",
-                                    "similarity": "dot_product",
-                                    "store": true,
-                                    "type": "vector"
-                                }
-                            ]
-                        },
-                        "dataframe": {
-                            "enabled": true,
-                            "fields": [
-                                {
-                                    "docvalues": true,
-                                    "include_in_all": false,
-                                    "include_term_vectors": false,
-                                    "index": true,
-                                    "name": "dataframe",
-                                    "store": true,
-                                    "analyzer": "keyword",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "meta": {
-                            "dynamic": true,
-                            "enabled": true,
-                            "properties": {
-                                "name": {
-                                    "enabled": true,
-                                    "fields": [
-                                        {
-                                            "docvalues": true,
-                                            "include_in_all": false,
-                                            "include_term_vectors": false,
-                                            "index": true,
-                                            "name": "name",
-                                            "store": true,
-                                            "analyzer": "keyword",
-                                            "type": "text"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
+                "enabled": true
+              },
+              "text": {
+                "dynamic": false,
+                "enabled": true,
+                "fields": [
+                  {
+                    "analyzer": "en",
+                    "index": true,
+                    "name": "text",
+                    "store": true,
+                    "type": "text"
+                  }
+                ]
+              }
             }
+          }
         }
-    }
-}
+      },
+      "store": {
+        "indexType": "scorch",
+        "segmentVersion": 16
+      }
+    },
+    "sourceParams": null
+  }
