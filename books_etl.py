@@ -60,7 +60,7 @@ if __name__ == "__main__":
         ),
 
         embedder_config=EmbedderConfig(
-            embedding_provider="langchain-huggingface",
+            embedding_provider="huggingface",
             embedding_model_name=os.getenv("EMBEDDING_MODEL"),
         ),
 
