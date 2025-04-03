@@ -1,69 +1,46 @@
 import os
 from dotenv import load_dotenv
 
-from unstructured_ingest.v2.pipeline.pipeline import Pipeline
-from unstructured_ingest.v2.interfaces import ProcessorConfig
-from unstructured_ingest.v2.processes.connectors.local import (
-    LocalIndexerConfig,
-    LocalDownloaderConfig,
-    LocalConnectionConfig,
-)
-from unstructured_ingest.v2.pipeline.pipeline import Pipeline
-from unstructured_ingest.v2.interfaces import ProcessorConfig
+from unstructured_ingest.pipeline.pipeline import Pipeline
+from unstructured_ingest.interfaces import ProcessorConfig
 
-from unstructured_ingest.v2.processes.connectors.couchbase import (
+from unstructured_ingest.processes.connectors.couchbase import (
     CouchbaseAccessConfig,
     CouchbaseConnectionConfig,
     CouchbaseUploadStagerConfig,
     CouchbaseUploaderConfig
 )
-from unstructured_ingest.v2.processes.connectors.local import (
+from unstructured_ingest.processes.connectors.local import (
     LocalIndexerConfig,
     LocalConnectionConfig,
     LocalDownloaderConfig
 )
-from unstructured_ingest.v2.processes.partitioner import PartitionerConfig
-from unstructured_ingest.v2.processes.chunker import ChunkerConfig
-from unstructured_ingest.v2.processes.embedder import EmbedderConfig
+from unstructured_ingest.processes.partitioner import PartitionerConfig
+from unstructured_ingest.processes.chunker import ChunkerConfig
+from unstructured_ingest.processes.embedder import EmbedderConfig
 
-from unstructured_ingest.v2.processes.partitioner import PartitionerConfig
-from unstructured_ingest.v2.processes.chunker import ChunkerConfig
-from unstructured_ingest.v2.processes.embedder import EmbedderConfig
+# Chunking and embedding are optional.
 
 if __name__ == "__main__":
     load_dotenv()
-
     Pipeline.from_configs(
-        context=ProcessorConfig(
-            verbose=True,
-            tqdm=True,
-            num_processes=20,
-        ),
-
-        indexer_config=LocalIndexerConfig(input_path=os.getenv("BOOKS_PATH"),
-                                          recursive=False),
+        context=ProcessorConfig(),
+        indexer_config=LocalIndexerConfig(input_path=os.getenv("BOOKS_PATH")),
         downloader_config=LocalDownloaderConfig(),
         source_connection_config=LocalConnectionConfig(),
-
         partitioner_config=PartitionerConfig(
             partition_by_api=True,
             api_key=os.getenv("UNSTRUCTURED_API_KEY"),
-            partition_endpoint=os.getenv("UNSTRUCTURED_URL"),
-            strategy="fast"
+            partition_endpoint=os.getenv("UNSTRUCTURED_API_URL"),
+            strategy="hi_res",
+            additional_partition_args={
+                "split_pdf_page": True,
+                "split_pdf_allow_failed": True,
+                "split_pdf_concurrency_level": 15
+            }
         ),
-
-        chunker_config=ChunkerConfig(
-            chunking_strategy="by_title",
-            chunk_max_characters=512,
-            chunk_multipage_sections=True,
-            chunk_combine_text_under_n_chars=250,
-        ),
-
-        embedder_config=EmbedderConfig(
-            embedding_provider="huggingface",
-            embedding_model_name=os.getenv("EMBEDDING_MODEL"),
-        ),
-
+        chunker_config=ChunkerConfig(chunking_strategy="by_title"),
+        embedder_config=EmbedderConfig(embedding_provider="huggingface"),
         destination_connection_config=CouchbaseConnectionConfig(
             access_config=CouchbaseAccessConfig(
                 password=os.getenv("CB_PASSWORD"),
